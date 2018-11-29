@@ -1,0 +1,36 @@
+	/*Example of an efficient 3 dimensional heap allocated array.
+  This "3d array" is optimized by using two linear arrays (one for pointers, one for data).  Once set up, it is accessed using 3 dimensions.
+  
+  The usual way of implementing a 3D heap allocated array seems to be by making D1xD2xD3 heap allocations, which can result in fragmented memory.
+  The performance concious way of doing it would be to use a single dimensional array and simulate multi dimensions by calculating, on the fly, how to access the elements.  This method is not as nice to use.
+  
+  The method below allocates a linear data array, and sets up a linear pointer array to give 3 dimensional access to the data array:  The elements are accessed in the usual way (eg pA[1][2][3]).  And since there are only two heap allocations, it should be fairly efficient in terms of CPU cache, etc.
+  */
+  
+  const int D1 = 5, D2 = 10, D3 = 15;   //Some sample dimensions: 5x10x15
+  
+  //Allocate the memory for the arrays
+	int*** pA = new int**[D1 + D1 * D2];	// 5 pointers to 5 blocks of 10 pointers
+	int* dA = new int[D1 * D2 * D3];		  // 5*10*15=750 integers; the actual data.  We're using integers for this example.
+  
+  //Initialize the pointer array, pA
+	for (int i = 0; i < D1; i++) {
+		pA[i] = (int**)&pA[D1 + D2 * i];    //this line puts the addresses of the 5 blocks into the first 5 slots of the array.
+		for (int j = 0; j < D2; j++) {
+			pA[i][j] = &dA[(i * D2 * D3) + (j * D2)];// this line puts the addresses of the data array blocks into the pointer array blocks
+		}
+	}
+
+//This section just puts some data into the data array, dA, so we can test it out.
+	for (int i = 0; i < (D1 * D2 * D3); i++)
+		dA[i] = i;
+
+//Lets print out some data.
+  for (int i = 0; i < D3; i++) {
+		std::cout << pA[0][0][D3] << std::endl; //Notice how nice this works to access the elements!
+	}
+	std::cin.get();
+  
+//Remember to clean up the heap.
+	delete[] pA;
+	delete[] dA;
